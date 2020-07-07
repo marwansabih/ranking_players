@@ -31,6 +31,8 @@ dependencies:
 - random-source
 - erf
 - hspec
+- selda-sqlite
+- selda
 
 library:
   source-dirs: src

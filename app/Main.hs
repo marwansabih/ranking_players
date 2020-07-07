@@ -12,6 +12,8 @@ import Data.Number.Erf
 import GHC.Float
 import Data.List
 import Internal.ExpectationNet
+import Control.Monad.IO.Class
+ 
 
 sampleStdNormal :: Int -> IO [Double]
 sampleStdNormal nr = replicateM nr (runRVar stdNormal DevRandom :: IO Double)

@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: ebf482545bfc238a6e23426eb9a4d52b9412e3c075bbb164fcea245f873db177
+-- hash: 8b79379af8d116fe10cb3e121223b42c19ed9ac45ef6ebf322bd75db60001f5f
 
 name:           ranking-players
 version:        0.1.0.0
@@ -28,6 +28,7 @@ source-repository head
 library
   exposed-modules:
       Internal.ExpectationNet
+      Internal.FakeDataBase
       Lib
   other-modules:
       Paths_ranking_players
@@ -44,6 +45,8 @@ library
     , random
     , random-fu
     , random-source
+    , selda
+    , selda-sqlite
     , xeno
   default-language: Haskell2010
 
@@ -66,6 +69,8 @@ executable ranking-players-exe
     , random-fu
     , random-source
     , ranking-players
+    , selda
+    , selda-sqlite
     , xeno
   default-language: Haskell2010
 
@@ -89,5 +94,7 @@ test-suite ranking-players-test
     , random-fu
     , random-source
     , ranking-players
+    , selda
+    , selda-sqlite
     , xeno
   default-language: Haskell2010

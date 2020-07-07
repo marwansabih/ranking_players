@@ -1,6 +1,7 @@
 import           Test.Hspec
 import           Internal.ExpectationNet
 
+
 --data NodeDescription = GF String Double Double | DGF String String Double | GrT String (String,String) Double
 
 nodes =
