@@ -13,6 +13,7 @@ import GHC.Float
 import Data.List
 import Internal.ExpectationNet
 import Control.Monad.IO.Class
+import Internal.FakeDataBase
  
 
 sampleStdNormal :: Int -> IO [Double]
@@ -213,6 +214,31 @@ task9 = do
   let jillPosterior' = normalPDF mu2' std2' [-30..300]
   plotPriorVsPost "Priors_vs_Posterios_Jill_Win.png" fredPrior fredPosterior jillPrior jillPosterior
   plotPriorVsPost "Priors_vs_Posterios_Jill_Loose.png" fredPrior fredPosterior' jillPrior jillPosterior'
+
+evalGameEntry :: Int -> IO ()
+evalGameEntry nr = do
+  (id1,id2,win_id, mu1, std1, mu2, std2) <- getGameRecord nr
+  let upGraph = replaceVariables [("Fred_Skill",mu1,std1),("Jill_Skill",mu2,std2)] graph
+  let [(fredSkill,mu1',std1'),(jillSkill,mu2',std2')] =  snd $ evalVariables ["Fred_Skill","Jill_Skill"] ["Jill_Win"] [[id2 == win_id]] upGraph
+  updatePlayer id1 mu1' std1'
+  updatePlayer id2 mu2' std2'
+  print $ show nr ++ " " 
+  print $ show id1 ++ " " ++ show mu1 ++ " " ++ show std1 
+  print $ show id1 ++ " " ++ show mu1' ++ " " ++ show std1'
+  print $ show id1 ++ " " ++ show mu2 ++ " " ++ show std2 
+  print $ show id2 ++ " " ++ show mu2' ++ " " ++ show std2'
+
+  
+
+testingTheFakeDataBase :: IO ()
+testingTheFakeDataBase = do
+  initDatabase
+  nrGames <- numberGames
+  mapM_ evalGameEntry [1..nrGames]
+  mapM_ printPlayer [1..100]
+  resetPlayers 
+  print nrGames
+
 
 main :: IO ()
 main = do

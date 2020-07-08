@@ -10,16 +10,18 @@ playerStrengths :: IO [Double]
 playerStrengths = replicateM (length names) (randomRIO (0::Double, 1))
 
 results :: IO [(Int,Int,Int)]
-results = replicateM 10000 generateResult
+results = do
+  strengths <- playerStrengths
+  replicateM 10000 (generateResult strengths)
 
-generateResult :: IO (Int,Int,Int)
-generateResult = do
+generateResult :: [Double] -> IO (Int,Int,Int)
+generateResult strengths = do
   let ids = [1..(length names +1)]
   pID1 <- randomRIO (1::Int, length names)
   let (xs,y:ys) = splitAt (pID1-1) ids
   pID2 <- (\nr ->  (xs ++ ys) !! nr) <$> randomRIO (0::Int, length names -2 )  
-  str1 <- (\xs -> xs !! (pID1-1)) <$> playerStrengths
-  str2 <- (\xs -> xs !! (pID2-1)) <$> playerStrengths
+  let str1 = strengths !! (pID1-1)
+  let str2 = strengths !! (pID2-1)
   perf1 <- randomRIO(0::Double,1)
   perf2 <- randomRIO(0::Double,1)
   return $ 
@@ -33,13 +35,21 @@ players = table "players" $ autoPrimary "id" :*: required "name" :*: required "m
 games :: Table (RowID :*: RowID :*: RowID :*: RowID)
 games = table "games" $ autoPrimary "id" :*: required "player1" :*: required "player2" :*: required "winner"
 
+printPlayer :: Int -> IO ()
+printPlayer id = withSQLite "my_database.sqlite" $ do
+  plz <- query $ do
+    (id':*: name :*:mu :*:std) <- select players
+    restrict(id' .== literal ( unsafeRowId id))
+    return (id':*: name :*:mu :*:std)
+  liftIO (print plz)
+
+
 numberGames :: IO Int
 numberGames = withSQLite "my_database.sqlite" $ do
   plz <- query $ aggregate $ do
     (id :*: _) <- select games
     return $ count id
   games' <- query $ select games
-  liftIO (print $ games')
   liftIO (return $ head plz)
 
 getGameRecord :: Int -> IO (RowID,RowID,RowID,Double,Double,Double,Double) 
@@ -47,6 +57,7 @@ getGameRecord nr = withSQLite "my_database.sqlite" $ do
   values <- query $ getGameRecord' nr
   let (player1 :*: player2 :*: winner :*: mu :*: std :*: mu2 :*: std2) = head values
   liftIO (return  (player1,player2,winner,mu,std,mu2,std2))  
+
 
 getGameRecord' nr = do
   (gid :*: player1 :*: player2 :*: winner) <- select games
@@ -57,11 +68,36 @@ getGameRecord' nr = do
   restrict (gid .== literal (unsafeRowId nr))
   return (player1 :*: player2 :*: winner :*: mu :*: std :*: mu2 :*: std2)
 
+resetPlayers :: IO ()
+resetPlayers = withSQLite "my_database.sqlite" $ do
+  resetPlayers'
+
+resetPlayers' :: SeldaM ()
+resetPlayers' = do
+  update_ players (const true)
+                  (\(id :*: name :*: _ :*: _ ) -> id :*: name :*: float 100.0 :*: float 50.0)
+
+updatePlayer :: RowID -> Double -> Double -> IO()
+updatePlayer id mu std = withSQLite "my_database.sqlite" $ do
+  updatePlayer' id mu std
+
+updatePlayer' :: RowID -> Double -> Double -> SeldaM ()
+updatePlayer' id mu std = do
+  update_ players (\(id' :*: _ :*: _) -> literal id .== id')
+                  (\(id :*: name :*: _ :*: _ ) -> id :*: name :*: float mu :*: float std)
+
 setup :: SeldaM ()
 setup = do
   createTable players
   createTable games
   
+initDatabase :: IO ()
+initDatabase = withSQLite "my_database.sqlite" $ do
+    teardown
+    setup
+    res <- liftIO results
+    insertGames res
+    insertPlayers
 
 insertPlayers :: SeldaM ()
 insertPlayers = do

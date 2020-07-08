@@ -111,9 +111,12 @@ stdev dist mu = sqrt $ eX2 - mu^2
     eX2 = sum $ map(\((a,b),(c,d)) -> (c-a) * (b+d)/2 * ((a+c)/2)^2 ) pairs
 
 approxGaussian :: NormDist -> (Double -> Double) -> NormDist
-approxGaussian dist cumul = normalDivision ("approx",mu, dev) dist
+approxGaussian dist@(_,mu',std') cumul = normalDivision ("approx",mu, dev) dist
   where
-    xs = [-300,-299.999..300] 
+    start = mu' - 4 * std'
+    end = mu' + 4 *std'
+    --xs = [start..end]
+    xs = [start,(start+std'/100)..end]
     cum = map cumul xs
     normDist = map (normal dist) xs
     product = map(uncurry (*) ) $ zip cum normDist
@@ -209,6 +212,7 @@ toId _ _ = []
 
 findOVNodeId :: String -> Graph -> (Int,[Int])
 findOVNodeId name graph = head $ concatMap (toId name) graph
+
 
 
 setObservation :: String -> Bool -> Graph -> Graph
