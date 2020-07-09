@@ -64,8 +64,8 @@ task3 = do
     print $ "var" ++ " " ++ show var
     print $ "std" ++ " " ++ show std
 
-sampleNormal :: Int -> Double -> Double -> IO [Double]
-sampleNormal nr mean std = replicateM nr (runRVar (Data.Random.normal mean std) DevRandom :: IO Double)
+--sampleNormal :: Int -> Double -> Double -> IO [Double]
+--sampleNormal nr mean std = replicateM nr (runRVar (Data.Random.normal mean std) DevRandom :: IO Double)
 
 
 skillPlot :: String -> Double -> [(Double,Double)] -> IO ()
@@ -222,11 +222,11 @@ evalGameEntry nr = do
   let [(fredSkill,mu1',std1'),(jillSkill,mu2',std2')] =  snd $ evalVariables ["Fred_Skill","Jill_Skill"] ["Jill_Win"] [[id2 == win_id]] upGraph
   updatePlayer id1 mu1' std1'
   updatePlayer id2 mu2' std2'
-  print $ show nr ++ " " 
-  print $ show id1 ++ " " ++ show mu1 ++ " " ++ show std1 
-  print $ show id1 ++ " " ++ show mu1' ++ " " ++ show std1'
-  print $ show id1 ++ " " ++ show mu2 ++ " " ++ show std2 
-  print $ show id2 ++ " " ++ show mu2' ++ " " ++ show std2'
+  --print $ show nr ++ " " 
+  --print $ show id1 ++ " " ++ show mu1 ++ " " ++ show std1 
+  --print $ show id1 ++ " " ++ show mu1' ++ " " ++ show std1'
+  --print $ show id1 ++ " " ++ show mu2 ++ " " ++ show std2 
+  --print $ show id2 ++ " " ++ show mu2' ++ " " ++ show std2'
 
   
 
@@ -235,9 +235,9 @@ testingTheFakeDataBase = do
   initDatabase
   nrGames <- numberGames
   mapM_ evalGameEntry [1..nrGames]
+  print "Skill prediction after 10000 observed Game results:"
   mapM_ printPlayer [1..100]
   resetPlayers 
-  print nrGames
 
 
 main :: IO ()

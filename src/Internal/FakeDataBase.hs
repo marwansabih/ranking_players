@@ -5,13 +5,22 @@ import           Database.Selda.SQLite
 import Database.Selda.Unsafe
 import System.Random
 import Control.Monad
+import Data.Random
+import           Data.Random.Distribution.Normal
+import           Data.Random.RVar
+import           Data.Random.Source.DevRandom
+
+sampleNormal :: Int -> Double -> Double -> IO [Double]
+sampleNormal nr mean std = replicateM nr (runRVar (Data.Random.normal mean std) DevRandom :: IO Double)
 
 playerStrengths :: IO [Double]
-playerStrengths = replicateM (length names) (randomRIO (0::Double, 1))
+playerStrengths = sampleNormal (length names) 100 15--replicateM (length names) (randomRIO (0::Double, 1))
 
 results :: IO [(Int,Int,Int)]
 results = do
   strengths <- playerStrengths
+  print $ "True Skill values :"
+  mapM_ print $ zip [1..] strengths
   replicateM 10000 (generateResult strengths)
 
 generateResult :: [Double] -> IO (Int,Int,Int)
@@ -22,8 +31,8 @@ generateResult strengths = do
   pID2 <- (\nr ->  (xs ++ ys) !! nr) <$> randomRIO (0::Int, length names -2 )  
   let str1 = strengths !! (pID1-1)
   let str2 = strengths !! (pID2-1)
-  perf1 <- randomRIO(0::Double,1)
-  perf2 <- randomRIO(0::Double,1)
+  perf1 <- head <$> sampleNormal 1 0 5--randomRIO(0::Double,1)
+  perf2 <- head <$> sampleNormal 1 0 5--randomRIO(0::Double,1)
   return $ 
     if str1 + perf1 > str2 + perf2 
       then (pID1, pID2, pID1)
@@ -101,7 +110,7 @@ initDatabase = withSQLite "my_database.sqlite" $ do
 
 insertPlayers :: SeldaM ()
 insertPlayers = do
-  insert_ players $ map (\name -> def :*: name :*: (100::Double) :*: (50::Double)) names
+  insert_ players $ map (\name -> def :*: name :*: (100::Double) :*: (15::Double)) names
   
 insertGames :: [(Int,Int,Int)] -> SeldaM ()
 insertGames results = do
@@ -118,7 +127,7 @@ names =
   , "Liam"
   , "Linus"
   , "Julia"
-  , "Jürgen"
+  , "Juergen"
   , "Jonas"
   , "CrazyCat"
   , "SleepyLion"
@@ -132,7 +141,7 @@ names =
   , "Andrea"
   , "Lukas"
   , "Verona"
-  , "Kröte"
+  , "Kroete"
   , "KillerRabe"
   , "TheFrog"
   , "Grenui"
@@ -148,7 +157,7 @@ names =
   , "TheShadow"
   , "LuckyLuke"
   , "GraberPaba"
-  , "HerrVonHöllestein"
+  , "HerrVonHoellestein"
   , "Winnie"
   , "Ursula"
   , "Gerald"
