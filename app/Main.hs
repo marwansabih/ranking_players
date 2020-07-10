@@ -1,12 +1,12 @@
 module Main where
 
-import           Data.Random.Distribution.Normal
-import           Data.Random.RVar
-import           Data.Random
-import           Data.Random.Source.DevRandom
-import           Control.Monad
-import           Graphics.Rendering.Chart.Backend.Cairo
-import           Graphics.Rendering.Chart.Easy
+import Data.Random.Distribution.Normal
+import Data.Random.RVar
+import Data.Random
+import Data.Random.Source.DevRandom
+import Control.Monad
+import Graphics.Rendering.Chart.Backend.Cairo
+import Graphics.Rendering.Chart.Easy
 import Graphics.Rendering.Chart.Plot.Lines
 import Data.Number.Erf
 import GHC.Float
@@ -14,7 +14,6 @@ import Data.List
 import Internal.ExpectationNet
 import Control.Monad.IO.Class
 import Internal.FakeDataBase
- 
 
 sampleStdNormal :: Int -> IO [Double]
 sampleStdNormal nr = replicateM nr (runRVar stdNormal DevRandom :: IO Double)
